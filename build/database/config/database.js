@@ -1,9 +1,9 @@
 "use strict";
 const config = {
-    username: 'root',
-    password: '',
+    username: 'postgres',
+    password: 'root',
     database: 'crud_sequelize',
     host: 'localhost',
-    dialect: 'mysql'
+    dialect: 'postgres'
 };
 module.exports = config;

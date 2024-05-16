@@ -26,22 +26,32 @@ class CourseService {
             try {
                 if (course) {
                     let listStudents;
-                    const students = yield Promise.all(course.students.map((e) => __awaiter(this, void 0, void 0, function* () {
-                        return yield Student_1.default.findByPk(e);
-                    })));
-                    if (students.some(e => e)) {
-                        listStudents = students;
+                    if (course.students != undefined) {
+                        console.log(course.students);
+                        const students = yield Promise.all(course.students.map((e) => __awaiter(this, void 0, void 0, function* () {
+                            return yield Student_1.default.findByPk(e);
+                        })));
+                        if (students.some(e => e)) {
+                            listStudents = students;
+                        }
+                        else {
+                            return (0, resp_1.default)(404, "Not found student");
+                        }
+                        const courseOut = yield this.model.create(Object.assign(Object.assign({}, course), { listStudents }));
+                        const studentCourse = course.students.map((e) => ({
+                            course_id: courseOut.id,
+                            student_id: e
+                        }));
+                        yield StudentCourse_1.default.bulkCreate(studentCourse);
+                        return yield (0, resp_1.default)(201, courseOut);
                     }
                     else {
-                        return (0, resp_1.default)(404, "Not found student");
+                        const { name, description } = course;
+                        let courseOut = yield this.model.create({
+                            name, description
+                        });
+                        return yield (0, resp_1.default)(201, courseOut);
                     }
-                    const courseOut = yield this.model.create(Object.assign(Object.assign({}, course), { listStudents }));
-                    const studentCourse = course.students.map((e) => ({
-                        course_id: courseOut.id,
-                        student_id: e
-                    }));
-                    yield StudentCourse_1.default.bulkCreate(studentCourse);
-                    return yield (0, resp_1.default)(201, courseOut);
                 }
                 return yield (0, resp_1.default)(400, "Unable to register course");
             }

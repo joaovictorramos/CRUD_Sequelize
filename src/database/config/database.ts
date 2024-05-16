@@ -1,11 +1,11 @@
 import { Options } from 'sequelize'
 
 const config: Options = {
-    username: 'root',
-    password: '',
+    username: 'postgres',
+    password: 'root',
     database: 'crud_sequelize',
     host: 'localhost',
-    dialect: 'mysql'
+    dialect: 'postgres'
 }
 
 export = config

@@ -19,26 +19,35 @@ class StudentService{
         try {
             if(student){
                 let listCourses
-                const courses = await Promise.all(student.courses!.map( async(e) => {
-                    return await Course.findByPk(e)
-                }))
-                if(courses.some(e => e)){
-                    listCourses = courses
+                if(student.courses != undefined){
+                    const courses = await Promise.all(student.courses!.map( async(e) => {
+                        return await Course.findByPk(e)
+                    }))
+                    if(courses.some(e => e)){
+                        listCourses = courses
+                    }else{
+                        return resp(404, "Not found course")
+                    }
+    
+                    const studentOut = await this.model.create({ 
+                        ...student,
+                        listCourses
+                     })
+    
+                    const studentCourse = student.courses!.map((e)=>({
+                        student_id: studentOut.id,
+                        course_id: e
+                    }))
+                    await StudentCourse.bulkCreate(studentCourse)
+                    return await resp(201, studentOut)
                 }else{
-                    return resp(404, "Not found course")
+                    const { name, registration } = student
+                    
+                    let studentOut = await this.model.create({
+                        name, registration
+                    })
+                    return await resp(201, studentOut)
                 }
-
-                const studentOut = await this.model.create({ 
-                    ...student,
-                    listCourses
-                 })
-
-                const studentCourse = student.courses!.map((e)=>({
-                    student_id: studentOut.id,
-                    course_id: e
-                }))
-                await StudentCourse.bulkCreate(studentCourse)
-                return await resp(201, studentOut)
             }
             return await resp(400, "Unable to register student")
         } catch (error) {

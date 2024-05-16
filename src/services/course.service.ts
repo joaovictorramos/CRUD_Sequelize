@@ -14,26 +14,37 @@ class CourseService{
         try {
             if(course){
                 let listStudents
-                const students = await Promise.all(course.students!.map( async(e) => {
-                    return await Student.findByPk(e)
-                }))
-                if(students.some(e => e)){
-                    listStudents = students
+                if(course.students != undefined){
+                    console.log(course.students)
+                    const students = await Promise.all(course.students!.map( async(e) => {
+                        return await Student.findByPk(e)
+                    }))
+                    if(students.some(e => e)){
+                        listStudents = students
+                    }else{
+                        return resp(404, "Not found student")
+                    }
+
+                    const courseOut = await this.model.create({
+                        ...course,
+                        listStudents
+                    })
+
+                    const studentCourse = course.students!.map((e)=>({
+                        course_id: courseOut.id,
+                        student_id: e
+                    }))
+
+                    await StudentCourse.bulkCreate(studentCourse)
+                    return await resp(201, courseOut)
                 }else{
-                    return resp(404, "Not found student")
+                    const { name, description } = course
+
+                    let courseOut = await this.model.create({
+                        name, description
+                    })
+                    return await resp(201, courseOut)
                 }
-
-                const courseOut = await this.model.create({
-                    ...course,
-                    listStudents
-                })
-
-                const studentCourse = course.students!.map((e)=>({
-                    course_id: courseOut.id,
-                    student_id: e
-                }))
-                await StudentCourse.bulkCreate(studentCourse)
-                return await resp(201, courseOut)
             }
             return await resp(400, "Unable to register course")
         } catch (error) {
